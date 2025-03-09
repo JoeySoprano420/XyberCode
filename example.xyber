@@ -1,0 +1,7 @@
+# Comment: Initialize System
+beg
+  task "Load user settings"
+  what is expected "Settings must be preloaded"
+  explicit detailed instructions "Store user preferences in memory"
+  command "Optimize runtime"
+end
