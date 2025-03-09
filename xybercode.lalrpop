@@ -1,0 +1,46 @@
+// XyberCode Grammar for LALRPOP
+grammar;
+
+use std::str::FromStr;
+
+// Main entry point for parsing
+Program: Vec<Statement> = Statements+;
+
+Statements: Statement = {
+    <s:Command> => s,
+    <s:Task> => s,
+    <s:Expectation> => s,
+    <s:Instruction> => s,
+    <s:Execution> => s,
+    <s:Block> => s,
+};
+
+// Blocks (Nested Execution)
+Block: Statement = "beg" <s:Statements*> "end" => Statement::Block(s);
+
+// Core Language Components
+Command: Statement = "command" String => Statement::Command;
+Task: Statement = "task" String => Statement::Task;
+Expectation: Statement = "what is expected" String => Statement::Expectation;
+Instruction: Statement = "explicit detailed instructions" String => Statement::Instruction;
+Execution: Statement = Identifier "=" Expression ";" => Statement::Execution;
+
+// Expressions
+Expression: Expression = {
+    <n:Num> => Expression::Number(n),
+    <s:String> => Expression::Text(s),
+    <b:Boolean> => Expression::Boolean(b),
+    <i:Identifier> => Expression::Identifier(i),
+    <l:Expression> "+" <r:Expression> => Expression::Add(Box::new(l), Box::new(r)),
+};
+
+// Data Types
+Num: i64 = <n:NumLiteral> => i64::from_str(&n).unwrap();
+String: String = "\"" <s:StringLiteral> "\"" => s;
+Boolean: bool = "true" => true; | "false" => false;
+Identifier: String = <s:ID> => s;
+
+// Tokens
+NumLiteral: String = r"[0-9]+";
+StringLiteral: String = r#"[^"]*"#;
+ID: String = r"[a-zA-Z_][a-zA-Z0-9_]*";
